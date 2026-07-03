@@ -17,15 +17,27 @@ MODELS = {
     "pythia": "EleutherAI/pythia-410m",
     "mamba": "state-spaces/mamba-370m-hf",
     "rwkv": "RWKV/rwkv-4-430m-pile",
+    "pythia14": "EleutherAI/pythia-1.4b",
+    "mamba14": "state-spaces/mamba-1.4b-hf",
+    "mamba2": "AntonV/mamba2-370m-hf",
 }
-BATCH = {"pythia": 4, "mamba": 2, "rwkv": 2}
+BATCH = {"pythia": 4, "mamba": 2, "rwkv": 2,
+         "pythia14": 2, "mamba14": 2, "mamba2": 1}
 DOMAINS = ["pg19", "wiki", "python"]
 
 
 def load_model(key):
     from transformers import AutoModelForCausalLM
-    model = AutoModelForCausalLM.from_pretrained(MODELS[key], torch_dtype=torch.float32)
-    model.eval().cuda()
+    kwargs = {}
+    if key == "mamba2":
+        # the pure-torch chunked scan materializes O(L * chunk_size) state
+        # tensors; smaller chunks trade speed for memory, result is exact
+        kwargs["chunk_size"] = 64
+    # load fp16 on CPU (halves host-RAM peak, avoids the OOM killer on 16GB
+    # boxes), upcast to fp32 on the GPU; weight rounding costs ~1e-3 nats
+    model = AutoModelForCausalLM.from_pretrained(MODELS[key], dtype=torch.float16,
+                                                 **kwargs)
+    model.eval().cuda().float()
     return model
 
 

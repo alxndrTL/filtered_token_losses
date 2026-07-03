@@ -44,6 +44,14 @@ architecture search because it averages over computation regimes that respond
    (parametric memory masks retrieval deficits on familiar text): Mamba's
    COPY5 gap is +0.01 on PG-19 but +0.11 on ClimbMix. Prefer ClimbMix-style
    held-out mixtures as the eval substrate.
+6. **Architecture buys recall; parameter scale doesn't** (Pythia/Mamba 1.4b +
+   Mamba2-370m runs): 4x params shrinks Mamba's paired COPY5 gap (+0.088 →
+   +0.053) but the planted-repeat retrieval gain is *unchanged* (~0.3 nats past
+   gap 256 at both sizes) — scale papers over the natural-text symptom via
+   parametric knowledge without fixing the mechanism. Mamba2 (d_state 16→128,
+   same size/data) cuts the gap to +0.027 and retains 2-4 nats of real
+   retrieval to gap 1792. For the campaign: state size / mixer design is the
+   recall lever; don't expect scale to rescue a recall-broken candidate.
 
 ## Campaign workflow
 

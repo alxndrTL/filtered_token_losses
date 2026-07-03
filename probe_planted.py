@@ -14,7 +14,7 @@ import numpy as np
 import torch
 
 sys.path.insert(0, ".")
-from score import MODELS, load_model, nll_batch  # noqa: E402
+from score import BATCH, MODELS, load_model, nll_batch  # noqa: E402
 
 L = 2048
 SPAN = 32
@@ -42,13 +42,17 @@ def build_windows():
 
 
 def main():
+    keys = [a for a in sys.argv[1:] if not a.startswith("-")] or list(MODELS)
+    out_file = "planted_probe.json" if keys == list(MODELS) else \
+        f"planted_probe_{'_'.join(keys)}.json"
     ids, spans = build_windows()
     results = {}
-    for key in MODELS:
+    for key in keys:
         model = load_model(key)
         nlls = []
-        for s in range(0, ids.shape[0], 2):
-            batch = torch.from_numpy(ids[s:s + 2]).cuda()
+        bs = BATCH[key]
+        for s in range(0, ids.shape[0], bs):
+            batch = torch.from_numpy(ids[s:s + bs]).cuda()
             nlls.append(nll_batch(model, batch))
         nll = torch.cat(nlls).numpy()          # (W, L-1), target position i -> nll[i-1]
         del model
@@ -67,7 +71,7 @@ def main():
             } for g, v in per_gap.items()
         }
         print(key, json.dumps(results[key], indent=None), flush=True)
-    with open("planted_probe.json", "w") as f:
+    with open(out_file, "w") as f:
         json.dump(results, f, indent=1)
 
 

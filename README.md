@@ -88,6 +88,31 @@ Pile-adjacent domains, consistent with parametric memory partially masking
 retrieval deficits on eval text that resembles training data. Held-out-mixture
 data is therefore the *better* substrate for this diagnostic.
 
+## Scale vs architecture (`fig_mamba2.png`, `analyze_large.py`)
+
+Added Pythia-1.4b, Mamba-1.4b, and Mamba2-370m (AntonV HF conversion of the
+Pile-trained state-spaces checkpoint). Paired COPY5 gap vs matched
+transformer, all domains pooled:
+
+| Candidate | COPY5 Δ | cliff @512-2048 | planted gain @1024 |
+|---|---|---|---|
+| Mamba-370m | +0.088 | +0.216 | 0.27 |
+| Mamba-1.4b | +0.053 | +0.130 | 0.26 |
+| Mamba2-370m | +0.027 | +0.074 | 3.74 |
+
+**Architecture beats scale for recall**: 4x parameters shrinks the natural-text
+gap (more parametric knowledge covers for retrieval) but leaves the
+planted-repeat retrieval gain unchanged (~0.3 nats past gap 256 for both Mamba1
+sizes) — the mechanism itself doesn't improve. Mamba2's d_state 16→128 at the
+*same* size cuts the paired gap 3x and retains 2-4 nats of genuine in-context
+retrieval out to gap 1792 (still decaying, unlike the flat ~6-nat transformer).
+
+Gotchas hit: the HF Mamba2 pure-torch path in transformers 4.46 was *inexact
+across chunk_size* (NLL 2.47→2.90 shrinking chunks); fixed in transformers
+5.13 (bit-identical) — verify chunk-size invariance before trusting slow-path
+numbers. Mamba2 slow path needs O(L·chunk·h·n) memory: chunk_size=64, batch 1
+fits 370m on 11 GB; ≥780m does not.
+
 ## Enhanced diagnostics (`fig_enhancements.png`)
 
 - **Recall cliff** (`distance_profile.py`): copy-5 paired gap stratified by
