@@ -1,0 +1,9 @@
+# torch pinned to a Pascal-compatible (sm_61) CUDA build; on modern GPUs any torch>=2.5 works:
+#   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1
+transformers==4.46.3
+datasets
+nltk
+numpy
+matplotlib
+ninja
