@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: ftl
+Version: 0.1.0
+Summary: Filtered token losses: measurement-only recall/state diagnostics for LLM architecture research (arXiv:2606.20936 + extensions)
+Requires-Python: >=3.9
+Requires-Dist: numpy

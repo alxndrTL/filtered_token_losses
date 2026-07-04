@@ -1,5 +1,43 @@
 # Filtered token losses — replication of arXiv:2606.20936 §6 on open models
 
+## `ftl` package — the campaign integration surface
+
+Everything reusable lives in the `ftl/` package (numpy-only, never loads a
+model). Install into any codebase:
+
+```bash
+pip install git+https://github.com/alxndrTL/filtered_token_losses
+```
+
+The integration boundary: **your codebase produces per-token NLL arrays
+(W, L-1) on a frozen eval pack; `ftl` turns them into metrics.**
+
+```python
+import ftl
+
+# once per campaign — packs are tokenizer-specific, freeze and version them:
+pack = ftl.build_pack(doc_iter, tokenizer, n_windows=300, window_len=2048)
+ftl.save_pack("evalpack_v1.npz", pack)
+
+# at every eval checkpoint of every candidate:
+nll = per_token_nll(model, pack["ids"])            # your forward pass
+np.save(f"nll/{run}/{step}.npy", nll.astype(np.float16))   # archive!
+logger.log(ftl.report(nll, pack, ref_nll=baseline_nll))
+# -> nll/all, nll/state, nll/copy5, copy5/failure_rate,
+#    recall_eff/{overall,1-32,...,512-2048}   (capability-invariant),
+#    gap/{all,copy5} + CIs, cliff/{bins}, hard_copy5 (with selector_nll=)
+
+# occasionally, the pure-mechanism check:
+ids, spans = ftl.build_probe(pack["ids"])
+probe_nll = per_token_nll(model, ids)
+logger.log(ftl.summarize_probe(probe_nll, spans))
+```
+
+Tests: `python tests/test_ftl.py`. End-to-end example against this repo's
+archived NLLs: `python example_integration.py`.
+The scripts in the repo root are the frozen replication record of the
+open-model study below; new work should go through `ftl`.
+
 Li & Merrill ("Comparing Transformers and Hybrid Models at the Token Level",
 arXiv:2606.20936) propose *filtered token losses*: measurement-only sub-losses
 computed from the same per-token NLL as standard validation, sliced by token
