@@ -66,6 +66,17 @@ architecture search because it averages over computation regimes that respond
    remove the LM-capability leak — the planted probe remains the pure-mechanism
    test.
 
+8. **RECALL EFFICIENCY is the capability-invariant recall metric**
+   (`recall_efficiency.py`): within-model ratio 1 − NLL(repeat)/NLL(first
+   occurrence) over copy events whose first occurrence cost the model itself
+   > 2 nats. LM capability cancels (it lowers both terms): Pythia 410m→1.4b
+   moves it only 0.914→0.919 while raw COPY5 moves ~13%. Mechanism ordering:
+   Pythia ~0.92 > Mamba2 0.90 > Mamba1 0.86-0.88 >> RWKV 0.63. Distance-
+   stratified: all models ~0.87 at range 1-128; at 512-2048 transformers hit
+   0.94, Mamba2 0.91, Mamba1 0.86-0.89, RWKV collapses to 0.53. Real data,
+   no external selector, zero extra forwards. Campaign primary recall metric;
+   planted probe stays as the pure-mechanism control.
+
 ## Campaign workflow
 
 - **Freeze one versioned eval pack** (packed windows + masks) for the entire
