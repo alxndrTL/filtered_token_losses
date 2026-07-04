@@ -21,7 +21,7 @@ numbers match the session's findings.
 
 import numpy as np
 
-import ftl
+import filtered_token_losses as ftl
 
 # assemble a pack-shaped dict from the archived eval data (pg19 domain)
 data = np.load("eval_data.npz")

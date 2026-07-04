@@ -1,19 +1,17 @@
 # Filtered token losses — replication of arXiv:2606.20936 §6 on open models
 
-## `ftl` package — the campaign integration surface
+## `filtered_token_losses.py` — the file to copy into your codebase
 
-Everything reusable lives in the `ftl/` package (numpy-only, never loads a
-model). Install into any codebase:
-
-```bash
-pip install git+https://github.com/alxndrTL/filtered_token_losses
-```
+Everything reusable lives in **one self-contained, numpy-only file**:
+[`filtered_token_losses.py`](filtered_token_losses.py). No install, no other
+imports, never loads a model — copy-paste it into your campaign codebase when
+it exists.
 
 The integration boundary: **your codebase produces per-token NLL arrays
-(W, L-1) on a frozen eval pack; `ftl` turns them into metrics.**
+(W, L-1) on a frozen eval pack; this file turns them into metrics.**
 
 ```python
-import ftl
+import filtered_token_losses as ftl
 
 # once per campaign — packs are tokenizer-specific, freeze and version them:
 pack = ftl.build_pack(doc_iter, tokenizer, n_windows=300, window_len=2048)
@@ -35,8 +33,8 @@ logger.log(ftl.summarize_probe(probe_nll, spans))
 
 Tests: `python tests/test_ftl.py`. End-to-end example against this repo's
 archived NLLs: `python example_integration.py`.
-The scripts in the repo root are the frozen replication record of the
-open-model study below; new work should go through `ftl`.
+The other scripts in the repo root are the frozen replication record of the
+open-model study below; new work should go through `filtered_token_losses.py`.
 
 Li & Merrill ("Comparing Transformers and Hybrid Models at the Token Level",
 arXiv:2606.20936) propose *filtered token losses*: measurement-only sub-losses

@@ -6,7 +6,7 @@ import pathlib
 import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import ftl
+import filtered_token_losses as ftl
 
 
 def test_copy_masks():
