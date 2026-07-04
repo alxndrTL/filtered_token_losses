@@ -53,6 +53,19 @@ architecture search because it averages over computation regimes that respond
    retrieval to gap 1792. For the campaign: state size / mixer design is the
    recall lever; don't expect scale to rescue a recall-broken candidate.
 
+7. **HARD-COPY5 removes the "usual English" contamination** (`hard_copy.py`):
+   keep only copy-5 events whose *first occurrence* cost an external selector
+   transformer > τ nats — if the token was surprising at first sight, its later
+   predictability must come from retrieval, not language statistics. Real-data
+   analogue of the planted probe's first-vs-second logic; computed retroactively
+   from the NLL archives. At τ=2 (20% of events survive), paired gaps amplify
+   ~2.5-3x: Mamba-370m +0.088→+0.226, RWKV +0.51→+1.40, Mamba2 +0.027→+0.070.
+   Use a selector external to both compared models (cross-selection) to avoid
+   selection bias. Residual caveat: a larger candidate can still beat the
+   selector via parametric knowledge, so hard-copy5 reduces but cannot fully
+   remove the LM-capability leak — the planted probe remains the pure-mechanism
+   test.
+
 ## Campaign workflow
 
 - **Freeze one versioned eval pack** (packed windows + masks) for the entire
